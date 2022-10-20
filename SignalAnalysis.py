@@ -52,7 +52,7 @@ def validate(values):
         is_valid = False
 
     elif int(values['-amplitude-']) == 0:
-        values_invalid.append('Amplitude Nula')
+        values_invalid.append('Amplitude (V/I)')
         is_valid = False
 
     result = [is_valid, values_invalid]
