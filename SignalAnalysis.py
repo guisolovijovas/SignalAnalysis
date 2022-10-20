@@ -190,12 +190,13 @@ def main():
                 max_freq = max(harm_freq_list)
                 max_ampli = max(harm_ampli_list)
                 THD = (math.sqrt((sum_all-(max_ampli ** 2))/max_ampli ** 2))*100
+                TDD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
                 grafico2 = ax2.bar(frequencias, amplitudes)
                 ax2.set_ylabel('Tensão(Vrms)')
                 ax2.set_xlabel('Frequência (Hz)')
                 ax2.set_xlim([0, max_freq+15])
                 draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
-                window['-ML1-'].update('THD é: {:0.1f}%'.format(THD))
+                window['-ML1-'].update('THD é: {:0.1f}%'.format(TDD)+'\n'+'TDD é: {:0.1f}%'.format(TDD))
 
             else:
                 error_message = generate_error_message(validation_result[1])
@@ -252,12 +253,13 @@ def main():
             max_freq = max(harm_freq_list)
             max_ampli = max(harm_ampli_list)
             THD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
+            TDD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
             grafico2 = ax2.bar(frequencias, amplitudes)
             ax2.set_ylabel('Tensão(Vrms)')
             ax2.set_xlabel('Frequência (Hz)')
             ax2.set_xlim([0, max_freq + 15])
             draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
-            window['-ML1-'].update('THD é: {:0.1f}%'.format(THD))
+            window['-ML1-'].update('THD é: {:0.1f}%'.format(TDD) + '\n' + 'TDD é: {:0.1f}%'.format(TDD))
 
         elif event == 'Exportar':
             filename = sg.tk.filedialog.asksaveasfile(defaultextension='txt')
