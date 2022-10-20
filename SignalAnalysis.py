@@ -62,7 +62,7 @@ def validate(values):
 def generate_error_message(values_invalid):
     error_message = ''
     for value_invalid in values_invalid:
-        error_message += ('\nCampo vazio ou nulo' + ':' + value_invalid)
+        error_message += ('\nCampo ** {} ** vazio ou nulo'.format(value_invalid))
 
     return error_message
 
