@@ -60,11 +60,11 @@ def validate(values):
         is_valid = False
 
     if len(values['-amplitude-']) == 0:
-        values_invalid.append('Amplitude (V/I)')
+        values_invalid.append('Tensão(Vrms)')
         is_valid = False
 
     elif int(values['-amplitude-']) == 0:
-        values_invalid.append('Amplitude (V/I)')
+        values_invalid.append('Tensão(Vrms)')
         is_valid = False
 
     result = [is_valid, values_invalid]
@@ -94,7 +94,7 @@ entradas = [[sg.Text('ANALISE DE SINAIS')],
             [sg.Push(), sg.T('Harmonica 3 (Hz):'), sg.Input(enable_events=True, key='-harmonica3-', size=(3, 1))],
             [sg.Push(), sg.T('Harmonica 4 (Hz):'), sg.Input(enable_events=True, key='-harmonica4-', size=(3, 1))],
             [sg.Push(), sg.T('Harmonica 5 (Hz):'), sg.Input(enable_events=True, key='-harmonica5-', size=(3, 1))],
-            [sg.Push(), sg.T('Amplitude (V/I) :'), sg.Input(enable_events=True, key='-amplitude-', size=(3, 1))],
+            [sg.Push(), sg.T('Tensão (Vrms):'), sg.Input(enable_events=True, key='-amplitude-', size=(3, 1))],
             [sg.Button('Plotar gráfico'), sg.Button('Limpar')],[sg.Multiline(size=(2, 10), key='-ML1-', expand_x=True, expand_y=True, no_scrollbar=True)]]
 # Layout creation
 graficos = [[sg.Canvas(key='controls_cv', expand_x=True, expand_y=True)],[sg.Canvas(key='-CANVAS-', expand_x=True, expand_y=True)],
@@ -112,9 +112,9 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
 
 # Associate fig with Canvas.
 draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
-ax1.set_ylabel('Tensão(V) / Corrente(I)')
+ax1.set_ylabel('Tensão(Vrms)')
 ax1.set_xlabel('Tempo (s)')
-ax2.set_ylabel('Amplitude')
+ax2.set_ylabel('Tensão(Vrms)')
 ax2.set_xlabel('Frequência (Hz)')
 
 #Variaveis globais
@@ -137,9 +137,9 @@ def main():
         elif event == "Plotar gráfico":
             ax1.cla()
             ax2.cla()
-            ax1.set_ylabel('Tensão(V) / Corrente(I)')
+            ax1.set_ylabel('Tensão(Vrms)')
             ax1.set_xlabel('Tempo (s)')
-            ax2.set_ylabel('Amplitude')
+            ax2.set_ylabel('Tensão(Vrms)')
             ax2.set_xlabel('Frequência (Hz)')
             draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
             validation_result = validate(values)
@@ -159,7 +159,7 @@ def main():
                 s = a1 * np.sin(ha1 * 2 * np.pi * t) + a2 * np.sin(ha2 * 2 * np.pi * t) + a3 * np.sin(ha3 * 2 * np.pi * t) + a4 * np.sin(ha4 * 2 * np.pi * t) + a5 * np.sin(ha5 * 2 * np.pi * t)
                 s_global = s
                 grafico1 = ax1.plot(t, s)
-                ax1.set_ylabel('Tensão(V) / Corrente(I)')
+                ax1.set_ylabel('Tensão(Vrms)')
                 ax1.set_xlabel('Tempo (s)')
                 draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
                 fft = np.fft.fft(s)
@@ -191,7 +191,7 @@ def main():
                 max_ampli = max(harm_ampli_list)
                 THD = (math.sqrt((sum_all-(max_ampli ** 2))/max_ampli ** 2))*100
                 grafico2 = ax2.bar(frequencias, amplitudes)
-                ax2.set_ylabel('Amplitude')
+                ax2.set_ylabel('Tensão(Vrms)')
                 ax2.set_xlabel('Frequência (Hz)')
                 ax2.set_xlim([0, max_freq+15])
                 draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
@@ -229,7 +229,7 @@ def main():
             s_import_array_float = np.asarray(s_import_array, dtype=float)
 
             grafico1 = ax1.plot(t_import_array_float, s_import_array_float)
-            ax1.set_ylabel('Tensão(V) / Corrente(I)')
+            ax1.set_ylabel('Tensão(Vrms)')
             ax1.set_xlabel('Tempo (s)')
             draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
             fft = np.fft.fft(s_import_array_float)
@@ -253,7 +253,7 @@ def main():
             max_ampli = max(harm_ampli_list)
             THD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
             grafico2 = ax2.bar(frequencias, amplitudes)
-            ax2.set_ylabel('Amplitude')
+            ax2.set_ylabel('Tensão(Vrms)')
             ax2.set_xlabel('Frequência (Hz)')
             ax2.set_xlim([0, max_freq + 15])
             draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
@@ -290,9 +290,9 @@ def main():
             s_global = ''
             frequencias_global = ''
             amplitudes_global = ''
-            ax1.set_ylabel('Tensão(V) / Corrente(I)')
+            ax1.set_ylabel('Tensão(Vrms)')
             ax1.set_xlabel('Tempo (s)')
-            ax2.set_ylabel('Amplitude')
+            ax2.set_ylabel('Tensão(Vrms)')
             ax2.set_xlabel('Frequência (Hz)')
             window['-ML1-'].update('')
             draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
