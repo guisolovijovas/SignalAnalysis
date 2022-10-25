@@ -159,7 +159,7 @@ def main():
                 a3 = a2/3
                 a4 = a3/3
                 a5 = a4/3
-                t = np.linspace(0, 0.1, 1000)
+                t = np.linspace(0, 0.1, 200)
                 t_global = t
                 s = a1 * np.sin(ha1 * 2 * np.pi * t) + a2 * np.sin(ha2 * 2 * np.pi * t) + a3 * np.sin(ha3 * 2 * np.pi * t) + a4 * np.sin(ha4 * 2 * np.pi * t) + a5 * np.sin(ha5 * 2 * np.pi * t)
                 s_global = s
@@ -182,6 +182,7 @@ def main():
                 for j in range(len(peaks)):
                     harm_ampli_list.append(amplitudes[peaks[j]])
 
+                print(harm_freq_list)
                 sum_all = sum_of_squares(harm_ampli_list)
                 max_freq = max(harm_freq_list)
                 max_ampli = max(harm_ampli_list)
@@ -189,7 +190,10 @@ def main():
                 TDD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
                 grafico2 = ax2.bar(frequencias, amplitudes)
                 ax2.set_xlim([0, max_freq+15])
-                window['-ML1-'].update('THD é: {:0.1f}%'.format(THD)+'\n'+'TDD é: {:0.1f}%'.format(TDD))
+                window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
+                window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
+                window['-ML1-'].print('Maior frequencia:',max_freq)
+                window['-ML1-'].print('Todas as frequencias:',harm_freq_list)
 
             else:
                 error_message = generate_error_message(validation_result[1])
