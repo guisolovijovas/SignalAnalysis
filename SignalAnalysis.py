@@ -120,7 +120,7 @@ layout = [[sg.Column(entradas,  vertical_alignment='top'), sg.VSeperator(), sg.C
 
 # Create a window. finalize=Must be True.
 window = sg.Window('ANALISE DE SINAIS', layout, size=(screensize), finalize=True,
-                   element_justification='center', font='Monospace 10', resizable=True)
+                   element_justification='left', font='Monospace 10', resizable=True)
 window.Maximize()
 # Create a fig for embedding.
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
@@ -155,11 +155,13 @@ def main():
                 ha4 = int(values['-harmonica4-'])
                 ha5 = int(values['-harmonica5-'])
                 a1 = int(values['-amplitude-'])
-                a2 = a1/4
+                a2 = a1/3
                 a3 = a2/3
                 a4 = a3/3
                 a5 = a4/3
-                t = np.linspace(0, 0.1, 200)
+                ponto_parada = 0.1
+                num_pontos = 1000
+                t = np.linspace(0, ponto_parada, num_pontos)
                 t_global = t
                 s = a1 * np.sin(ha1 * 2 * np.pi * t) + a2 * np.sin(ha2 * 2 * np.pi * t) + a3 * np.sin(ha3 * 2 * np.pi * t) + a4 * np.sin(ha4 * 2 * np.pi * t) + a5 * np.sin(ha5 * 2 * np.pi * t)
                 s_global = s
@@ -193,7 +195,9 @@ def main():
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 window['-ML1-'].print('Maior frequencia:',max_freq)
-                window['-ML1-'].print('Todas as frequencias:',harm_freq_list)
+                for i in range(len(harm_freq_list)):
+                    window['-ML1-'].print('Harmonica {}: {}Hz'.format(i+1,math.ceil(harm_freq_list[i])))
+                
 
             else:
                 error_message = generate_error_message(validation_result[1])
@@ -246,7 +250,7 @@ def main():
                 TDD = (math.sqrt((sum_all - (max_ampli ** 2)) / max_ampli ** 2)) * 100
                 grafico2 = ax2.bar(frequencias, amplitudes)
                 ax2.set_xlim([0, max_freq + 15])
-                window['-ML1-'].update('THD é: {:0.1f}%'.format(THD) + '\n' + 'TDD é: {:0.1f}%'.format(TDD))
+                
 
         elif event == 'Exportar':
             filename = sg.tk.filedialog.asksaveasfile(defaultextension='txt')
