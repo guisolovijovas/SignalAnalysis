@@ -39,7 +39,19 @@ def draw_figure_w_toolbar(canvas, fig, canvas_toolbar):
     toolbar.update()
     figure_canvas_agg.get_tk_widget().pack(side='right', fill='both', expand=1)
 
-# Limpa ambos os graficos e escreves as legendas dos eixos
+
+def draw_figure_w_toolbar2(canvas2, fig2, canvas_toolbar2):
+    if canvas2.children:
+        for child in canvas2.winfo_children():
+            child.destroy()
+    if canvas_toolbar2.children:
+        for child in canvas_toolbar2.winfo_children():
+            child.destroy()
+    figure_canvas_agg = FigureCanvasTkAgg(fig2, master=canvas2)
+    figure_canvas_agg.draw()
+    toolbar = Toolbar(figure_canvas_agg, canvas_toolbar2)
+    toolbar.update()
+    figure_canvas_agg.get_tk_widget().pack(side='right', fill='both', expand=1)
 
 # funcao para achar indice onde t == periodo
 
@@ -59,16 +71,36 @@ def find_index2(a_list, item_to_find):
     return indices
 
 
+def LCMofArray(a):
+    lcm = a[0]
+    for i in range(1, len(a)):
+        lcm = lcm*a[i]//math.gcd(lcm, a[i])
+    return lcm
+
+
 def clean_graphs():
     ax1.cla()
     ax2.cla()
+    ax3.cla()
+    ax4.cla()
+    ax1.grid(True)
+    ax2.grid(True)
+    ax3.grid(True)
+    ax4.grid(True)
     ax1.set_ylabel('Tensão(Vrms)')
-    ax1.set_xlabel('Tempo (ms)')
+    ax1.set_xlabel('Tempo (s)')
     ax2.set_ylabel('Tensão(Vrms)')
     ax2.set_xlabel('Frequência (Hz)')
+    ax3.set_ylabel('Corrente')
+    ax3.set_xlabel('Tempo (s)')
+    ax4.set_ylabel('Corrente')
+    ax4.set_xlabel('Frequência (Hz)')
     window['-ML1-'].update('')
+    window['-ML2-'].update('')
     draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas,
                           fig, window['controls_cv'].TKCanvas)
+    draw_figure_w_toolbar2(
+        window['-CANVAS2-'].TKCanvas, fig2, window['controls_cv2'].TKCanvas)
     t_global = ''
     s_global = ''
     frequencias_global = ''
@@ -149,28 +181,39 @@ entradas = [[sg.Text('ANALISE DE SINAIS')],
                 enable_events=True, key='-harmonica5-', size=(4, 1))],
             [sg.Push(), sg.T('Tensão:'), sg.Input(
                 enable_events=True, key='-amplitude-', size=(4, 1))],
-            [sg.Push(), sg.Button('Plotar gráfico'), sg.Button('Limpar')]]
+            [sg.Push(), sg.Button('Plotar gráfico', button_color=('white', 'springgreen4')), sg.Button('Limpar', button_color=('white', 'firebrick3'))]]
 # Layout creation
-graficos = [[sg.Canvas(key='controls_cv', expand_x=True, expand_y=True)], [sg.Canvas(key='-CANVAS-', expand_x=True, expand_y=True)],
-            [sg.Button('Importar', expand_x=True, expand_y=True), sg.Button('Exportar', expand_x=True, expand_y=True),
-             sg.Button('Exportar FFT', expand_x=True, expand_y=True)], [sg.Multiline(size=(10, 25), key='-ML1-', expand_x=True, expand_y=True, no_scrollbar=True)]]
+layout_tab1 = [[sg.Canvas(key='controls_cv', expand_x=True, expand_y=True)], [sg.Canvas(key='-CANVAS-', expand_x=True, expand_y=True)],
+               [sg.Button('Importar', expand_x=True, expand_y=True, button_color=('white', 'black')), sg.Button('Exportar', expand_x=True, expand_y=True, button_color=('white', 'black')),
+                sg.Button('Exportar FFT', expand_x=True, expand_y=True, button_color=('white', 'black'))], [sg.Multiline(size=(10, 25), key='-ML1-', expand_x=True, expand_y=True, no_scrollbar=True)]]
+
+layout_tab2 = [[sg.Canvas(key='controls_cv2', expand_x=True, expand_y=True)], [sg.Canvas(key='-CANVAS2-', expand_x=True, expand_y=True)],
+               [sg.Multiline(size=(10, 25), key='-ML2-', expand_x=True, expand_y=True, no_scrollbar=True)]]
+
+layout_tabgroup = [[sg.Tab('Gráfico Tensão', layout_tab1)], [
+    sg.Tab('Gráfico Corrente', layout_tab2)]]
+
+layout_frame = [[sg.TabGroup(layout_tabgroup)]]
 
 layout = [[sg.Column(entradas,  vertical_alignment='top'),
-           sg.VSeperator(), sg.Column(graficos)]]
+           sg.VSeperator(), sg.Column(layout_frame)]]
 
 # Create a window. finalize=Must be True.
 window = sg.Window('ANALISE DE SINAIS', layout, size=(screensize), finalize=True,
                    element_justification='left', font='Monospace 10', resizable=True)
 window.Maximize()
+figsize_x = screensize[0]/116.3
+figsize_y = figsize_x*0.4545
 # Create a fig for embedding.
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5))
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(figsize_x, figsize_y))
+fig2, (ax3, ax4) = plt.subplots(1, 2, figsize=(figsize_x, figsize_y))
 
 # Associate fig with Canvas.
 clean_graphs()
 
 # Variaveis globais
 t_global, s_global, file_global, s_import_array, t_import_array, frequencias_global, amplitudes_global = '', '', '', '', '', '', ''
-num_pontos, ponto_parada = 10000, 0.5
+num_pontos, ponto_parada = 20000, 1
 
 # Event loop
 
@@ -214,19 +257,16 @@ def main():
                 harm_freq_list, harm_ampli_list, sinal_freq_list, sinal_ampli_list = [], [], [], []
 
                 for i in range(len(peaks)):
-                    harm_freq_list.append(frequencias[peaks[i]])
+                    harm_freq_list.append(ceil(frequencias[peaks[i]]))
                     harm_ampli_list.append(amplitudes[peaks[i]])
 
                 for i in range(len(peaks2)):
                     sinal_freq_list.append(t[peaks2[i]])
                     sinal_ampli_list.append(s[peaks2[i]])
 
-                sinal_index = find_index2(
-                    sinal_ampli_list, max(sinal_ampli_list))
-                periodo = sinal_freq_list[sinal_index[1]
-                                          ]-sinal_freq_list[sinal_index[0]]
+                gcd_denominator = math.gcd(*harm_freq_list)
+                periodo = 1/gcd_denominator
                 t_index = find_index(t, periodo)
-                t_index_half = t_index//2
                 t_index_half = int(t_index//2)
                 sum_all = sum_of_squares(harm_ampli_list)
                 sum_all_sinal = sum_of_squares(s[0:t_index_half])
@@ -236,7 +276,6 @@ def main():
                 integral = (intg.trapz(t[0:t_index_half]), s[0: t_index_half])
                 valor_medio = periodo * integral[0]
                 tensao_rms = sqrt(sum_all_sinal/len(t[0:t_index_half]))
-                tensao_rms_2 = max(sinal_ampli_list) * 0.7071
                 grafico1 = ax1.plot(t, s)
                 grafico2 = ax2.plot(frequencias, amplitudes)
                 linha_tensao_rms = ax1.axhline(
@@ -252,14 +291,12 @@ def main():
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
-                    window['-ML1-'].print('Harmonica {}: {}Hz, A={:.2f}'.format(
+                    window['-ML1-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
                         i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
                 window['-ML1-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio))
                 window['-ML1-'].print(
-                    'Tensao RMS(Método Gráfico): {:0.1f}'.format(tensao_rms))
-                window['-ML1-'].print(
-                    'Tensao RMS(Método Analítico): {:0.1f}'.format(tensao_rms_2))
+                    'Tensao RMS: {:0.1f}'.format(tensao_rms))
                 window['-ML1-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
                 window['-ML1-'].print(
@@ -313,19 +350,17 @@ def main():
                 harm_freq_list, harm_ampli_list, sinal_freq_list, sinal_ampli_list = [], [], [], []
 
                 for i in range(len(peaks)):
-                    harm_freq_list.append(frequencias[peaks[i]])
+                    harm_freq_list.append(ceil(frequencias[peaks[i]]))
                     harm_ampli_list.append(amplitudes[peaks[i]])
 
                 for i in range(len(peaks2)):
                     sinal_freq_list.append(t_import_array_float[peaks2[i]])
                     sinal_ampli_list.append(s_import_array_float[peaks2[i]])
 
-                sinal_index = find_index2(
-                    sinal_ampli_list, max(sinal_ampli_list))
-                periodo = sinal_freq_list[sinal_index[1]
-                                          ]-sinal_freq_list[sinal_index[0]]
+                gcd_denominator = math.gcd(*harm_freq_list)
+                periodo = 1/gcd_denominator
                 t_index = find_index(t_import_array_float, periodo)
-                t_index_half = t_index//2
+                t_index_half = int(t_index//2)
                 sum_all = sum_of_squares(harm_ampli_list)
                 sum_all_sinal = sum_of_squares(
                     s_import_array_float[0:t_index_half])
@@ -337,7 +372,6 @@ def main():
                 valor_medio = periodo * integral[0]
                 tensao_rms = sqrt(
                     sum_all_sinal/len(t_import_array_float[0:t_index_half]))
-                tensao_rms_2 = max(sinal_ampli_list) * 0.7071
                 grafico1 = ax1.plot(t_import_array_float, s_import_array_float)
                 grafico2 = ax2.plot(frequencias, amplitudes)
                 linha_tensao_rms = ax1.axhline(
@@ -358,9 +392,7 @@ def main():
                 window['-ML1-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio))
                 window['-ML1-'].print(
-                    'Tensao RMS(Método Gráfico): {:0.1f}'.format(tensao_rms))
-                window['-ML1-'].print(
-                    'Tensao RMS(Método Analítico): {:0.1f}'.format(tensao_rms_2))
+                    'Tensao RMS: {:0.1f}'.format(tensao_rms))
                 window['-ML1-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
                 window['-ML1-'].print(
