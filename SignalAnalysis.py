@@ -40,19 +40,6 @@ def draw_figure_w_toolbar(canvas, fig, canvas_toolbar):
     figure_canvas_agg.get_tk_widget().pack(side='right', fill='both', expand=1)
 
 
-def draw_figure_w_toolbar2(canvas2, fig2, canvas_toolbar2):
-    if canvas2.children:
-        for child in canvas2.winfo_children():
-            child.destroy()
-    if canvas_toolbar2.children:
-        for child in canvas_toolbar2.winfo_children():
-            child.destroy()
-    figure_canvas_agg = FigureCanvasTkAgg(fig2, master=canvas2)
-    figure_canvas_agg.draw()
-    toolbar = Toolbar(figure_canvas_agg, canvas_toolbar2)
-    toolbar.update()
-    figure_canvas_agg.get_tk_widget().pack(side='right', fill='both', expand=1)
-
 # funcao para achar indice onde t == periodo
 
 
@@ -83,6 +70,15 @@ def clean_graphs():
     ax2.cla()
     ax3.cla()
     ax4.cla()
+    window['-ML1-'].update('')
+    window['-ML2-'].update('')
+    t_global = ''
+    s_global = ''
+    frequencias_global = ''
+    amplitudes_global = ''
+
+
+def draw_graphs():
     ax1.grid(True)
     ax2.grid(True)
     ax3.grid(True)
@@ -91,20 +87,14 @@ def clean_graphs():
     ax1.set_xlabel('Tempo (s)')
     ax2.set_ylabel('Tensão(Vrms)')
     ax2.set_xlabel('Frequência (Hz)')
-    ax3.set_ylabel('Corrente')
+    ax3.set_ylabel('Corrente(A)')
     ax3.set_xlabel('Tempo (s)')
-    ax4.set_ylabel('Corrente')
+    ax4.set_ylabel('Corrente(A)')
     ax4.set_xlabel('Frequência (Hz)')
-    window['-ML1-'].update('')
-    window['-ML2-'].update('')
     draw_figure_w_toolbar(window['-CANVAS-'].TKCanvas,
                           fig, window['controls_cv'].TKCanvas)
-    draw_figure_w_toolbar2(
-        window['-CANVAS2-'].TKCanvas, fig2, window['controls_cv2'].TKCanvas)
-    t_global = ''
-    s_global = ''
-    frequencias_global = ''
-    amplitudes_global = ''
+    draw_figure_w_toolbar(window['-CANVAS2-'].TKCanvas,
+                          fig2, window['controls_cv2'].TKCanvas)
 
 
 class Toolbar(NavigationToolbar2Tk):
@@ -207,13 +197,12 @@ figsize_y = figsize_x*0.4545
 # Create a fig for embedding.
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(figsize_x, figsize_y))
 fig2, (ax3, ax4) = plt.subplots(1, 2, figsize=(figsize_x, figsize_y))
-
-# Associate fig with Canvas.
-clean_graphs()
-
 # Variaveis globais
 t_global, s_global, file_global, s_import_array, t_import_array, frequencias_global, amplitudes_global = '', '', '', '', '', '', ''
 num_pontos, ponto_parada = 20000, 1
+carga = 50
+offset = 0
+draw_graphs()
 
 # Event loop
 
@@ -228,6 +217,7 @@ def main():
         elif event == "Plotar gráfico":
             start_counter_ns = time.perf_counter_ns()
             clean_graphs()
+            draw_graphs()
             validation_result = validate(values)
             if validation_result[0]:
                 ha1, ha2, ha3, ha4, ha5 = int(values['-harmonica1-']), int(values['-harmonica2-']), int(
@@ -238,56 +228,106 @@ def main():
                 a4 = random.uniform(1, a3/2)
                 a5 = random.uniform(1, a4/2)
                 sample_rate = num_pontos/ponto_parada
-                offset = 0
+
+                # PONTOS QUE REPRESENTAM o TEMPO
                 t = np.linspace(0, ponto_parada, num_pontos, dtype=float)
                 s = offset + a1*np.sin(ha1*2*np.pi*t)+a2*np.sin(ha2*2*np.pi*t)+a3*np.sin(
-                    ha3*2*np.pi*t)+a4*np.sin(ha4*2*np.pi*t)+a5*np.sin(ha5*2*np.pi*t)
+                    ha3*2*np.pi*t)+a4*np.sin(ha4*2*np.pi*t)+a5*np.sin(ha5*2*np.pi*t)  # PONTOS QUE REPRESENTAM A AMPLITUDE DO SINAL EM FUNCÃO DO TEMPO
+                # PONTOS QUE REPRESENTAM AMPLITUDE DA CORRENTE DADA DETERMINADA CARGA EM OHMS
+                corrente = s/carga
                 fft = np.fft.fft(s)
+                fft2 = np.fft.fft(corrente)
                 T = t[1]-t[0]
                 N = s.size
+                N2 = corrente.size
                 f = np.fft.fftfreq(len(s), T)
+                f2 = np.fft.fftfreq(len(corrente), T)
                 frequencias = f[:N // 2]
+                frequencias2 = f2[:N2 // 2]
                 amplitudes = np.abs(fft)[:N // 2] * 1 / N
+                amplitudes2 = np.abs(fft2)[:N2 // 2] * 1 / N2
                 t_global = t
                 s_global = s
+                corrente_global = corrente
                 frequencias_global = frequencias
                 amplitudes_global = amplitudes
+                frequencias2_global = frequencias2
+                amplitudes2_global = amplitudes2
+                # OBTEM VALORES DE PICO DO GRAFICO DA FFT DO SINAL DA TENSAO
                 peaks, _ = find_peaks(amplitudes)
+                # OBTEM VALORES DE PICO DO SINAL DA TENSAO
                 peaks2, _ = find_peaks(s)
-                harm_freq_list, harm_ampli_list, sinal_freq_list, sinal_ampli_list = [], [], [], []
+                # OBTEM VALOREM DE PICO DO SINAL DA CORRENTE
+                peaks3, _ = find_peaks(amplitudes2)
+
+                peaks4, _ = find_peaks(corrente)
+
+                harm_freq_list, harm_ampli_list, sinal_ampli_list, sinal_ampli_list2, corrente_freq_list, corrente_ampli_list = [], [], [], [], [], []
 
                 for i in range(len(peaks)):
                     harm_freq_list.append(ceil(frequencias[peaks[i]]))
                     harm_ampli_list.append(amplitudes[peaks[i]])
 
                 for i in range(len(peaks2)):
-                    sinal_freq_list.append(t[peaks2[i]])
                     sinal_ampli_list.append(s[peaks2[i]])
 
+                for i in range(len(peaks3)):
+                    corrente_freq_list.append(ceil(frequencias2[peaks3[i]]))
+                    corrente_ampli_list.append(amplitudes2[peaks3[i]])
+
+                for i in range(len(peaks4)):
+                    sinal_ampli_list2.append(corrente[peaks4[i]])
+
                 gcd_denominator = math.gcd(*harm_freq_list)
+                gcd_denominator_corrente = math.gcd(*corrente_freq_list)
                 periodo = 1/gcd_denominator
+                periodo2 = 1/gcd_denominator_corrente
                 t_index = find_index(t, periodo)
+                t_index2 = find_index(t, periodo2)
                 t_index_half = int(t_index//2)
+                t_index_half2 = int(t_index2//2)
                 sum_all = sum_of_squares(harm_ampli_list)
+                sum_all2 = sum_of_squares(corrente_ampli_list)
                 sum_all_sinal = sum_of_squares(s[0:t_index_half])
+                sum_all_sinal2 = sum_of_squares(corrente[0:t_index_half2])
                 max_freq, max_ampli = max(harm_freq_list), max(harm_ampli_list)
+                max_freq_corrente, max_ampli_corrente = max(
+                    corrente_freq_list), max(corrente_ampli_list)
                 THD = (sqrt((sum_all-(max_ampli**2))/max_ampli**2))*100
                 TDD = (sqrt((sum_all-(max_ampli**2))/max_ampli**2))*100
+                THD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
+                        max_ampli_corrente**2))*100
+                TDD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
+                        max_ampli_corrente**2))*100
                 integral = (intg.trapz(t[0:t_index_half]), s[0: t_index_half])
+                integral2 = (intg.trapz(
+                    t[0:t_index_half2]), corrente[0: t_index_half2])
                 valor_medio = periodo * integral[0]
+                valor_medio2 = periodo2 * integral2[0]
                 tensao_rms = sqrt(sum_all_sinal/len(t[0:t_index_half]))
+                corrente_rms = sqrt(sum_all_sinal2/len(t[0:t_index_half2]))
                 grafico1 = ax1.plot(t, s)
                 grafico2 = ax2.plot(frequencias, amplitudes)
+                grafico3 = ax3.plot(t, corrente)
+                grafico4 = ax4.plot(frequencias2, amplitudes2)
                 linha_tensao_rms = ax1.axhline(
-                    y=tensao_rms, color='r', linestyle='dashed', label='Tensão RMS')
+                    y=tensao_rms, color='r', linestyle='dashed', label='Valor Eficaz da Tensão')
                 linha_valor_pico = ax1.axhline(
                     y=max(sinal_ampli_list), color='b', linestyle='dashed', label='Valor de Pico')
-                ax1.grid(True)
-                ax2.grid(True)
-                ax1.set_xlim([0, periodo])
-                ax2.set_ylim([0, max_ampli+10])
-                ax2.set_xlim([0, max_freq+10])
+                linha_tensao_rms2 = ax3.axhline(
+                    y=corrente_rms, color='r', linestyle='dashed', label='Valor Eficaz da Corrente')
+                linha_valor_pico = ax3.axhline(
+                    y=max(sinal_ampli_list2), color='b', linestyle='dashed', label='Valor de Pico')
+
                 ax1.legend()
+                ax3.legend()
+                ax1.set_xlim([0, periodo])
+                ax2.set_ylim([0, max_ampli+(max_ampli*0.1)])
+                ax2.set_xlim([0, max_freq+(max_freq*0.1)])
+                ax3.set_xlim([0, periodo2])
+                ax4.set_ylim([0, max_ampli_corrente+(max_ampli_corrente*0.1)])
+                ax4.set_xlim([0, max_freq_corrente+(max_freq_corrente*0.1)])
+
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
@@ -296,7 +336,7 @@ def main():
                 window['-ML1-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio))
                 window['-ML1-'].print(
-                    'Tensao RMS: {:0.1f}'.format(tensao_rms))
+                    'Valor Eficaz da Tensão: {:0.1f}'.format(tensao_rms))
                 window['-ML1-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
                 window['-ML1-'].print(
@@ -304,6 +344,24 @@ def main():
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML1-'].print(
+                    'Tempo de execução:', timer_ns/10**9)
+
+                window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
+                window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
+                for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
+                    window['-ML2-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
+                        i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
+                window['-ML2-'].print(
+                    'Valor Médio: {:0.7f}'.format(valor_medio2))
+                window['-ML2-'].print(
+                    'Valor Eficaz da Corrente: {:0.1f}'.format(corrente_rms))
+                window['-ML2-'].print(
+                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
+                window['-ML2-'].print(
+                    'Periodo: {:0.3f}'.format(periodo2))
+                end_counter_ns = time.perf_counter_ns()
+                timer_ns = end_counter_ns - start_counter_ns
+                window['-ML2-'].print(
                     'Tempo de execução:', timer_ns/10**9)
 
             else:
@@ -314,6 +372,7 @@ def main():
             filename = sg.popup_get_file('Will not see this message', no_window=True, multiple_files=False,
                                          file_types=(('.txt', '*.txt*'),), )
             clean_graphs()
+            draw_graphs()
             if filename == '':
                 main()
 
@@ -330,7 +389,7 @@ def main():
                         t_import.append(sub.replace("\n", ""))
 
                 t_import_array = np.array(t_import)
-                t_import_array_float = np.asarray(t_import_array, dtype=float)
+                t = np.asarray(t_import_array, dtype=float)
                 with open(filename, 'r') as myfile:
                     linhas_s = myfile.readlines()[int(num_lines/2):num_lines]
                     s_import = []
@@ -338,52 +397,95 @@ def main():
                         s_import.append(sub.replace("\n", ""))
 
                 s_import_array = np.array(s_import)
-                s_import_array_float = np.asarray(s_import_array, dtype=float)
-                fft = np.fft.fft(s_import_array_float)
-                T = t_import_array_float[1] - t_import_array_float[0]
-                N = s_import_array_float.size
-                f = np.fft.fftfreq(len(s_import_array_float), T)
+                s = np.asarray(s_import_array, dtype=float)
+                corrente = s/carga
+                fft = np.fft.fft(s)
+                fft2 = np.fft.fft(corrente)
+                T = t[1] - t[0]
+                N = s.size
+                N2 = corrente.size
+                f = np.fft.fftfreq(len(s), T)
+                f2 = np.fft.fftfreq(len(corrente), T)
                 frequencias = f[:N // 2]
+                frequencias2 = f2[:N2 // 2]
                 amplitudes = np.abs(fft)[:N // 2] * 1 / N
+                amplitudes2 = np.abs(fft2)[:N2 // 2] * 1 / N2
+                t_global = t
+                s_global = s
                 peaks, _ = find_peaks(amplitudes)
-                peaks2, _ = find_peaks(s_import_array_float)
-                harm_freq_list, harm_ampli_list, sinal_freq_list, sinal_ampli_list = [], [], [], []
+                peaks2, _ = find_peaks(s)
+                peaks3, _ = find_peaks(amplitudes2)
+                peaks4, _ = find_peaks(corrente)
+                harm_freq_list, harm_ampli_list, sinal_ampli_list, sinal_ampli_list2, corrente_freq_list, corrente_ampli_list = [], [], [], [], [], []
 
                 for i in range(len(peaks)):
                     harm_freq_list.append(ceil(frequencias[peaks[i]]))
                     harm_ampli_list.append(amplitudes[peaks[i]])
 
                 for i in range(len(peaks2)):
-                    sinal_freq_list.append(t_import_array_float[peaks2[i]])
-                    sinal_ampli_list.append(s_import_array_float[peaks2[i]])
+                    sinal_ampli_list.append(s[peaks2[i]])
+
+                for i in range(len(peaks3)):
+                    corrente_freq_list.append(ceil(frequencias2[peaks3[i]]))
+                    corrente_ampli_list.append(amplitudes2[peaks3[i]])
+
+                for i in range(len(peaks4)):
+                    sinal_ampli_list2.append(corrente[peaks4[i]])
 
                 gcd_denominator = math.gcd(*harm_freq_list)
+                gcd_denominator_corrente = math.gcd(*corrente_freq_list)
                 periodo = 1/gcd_denominator
-                t_index = find_index(t_import_array_float, periodo)
+                periodo2 = 1/gcd_denominator_corrente
+                t_index = find_index(t, periodo)
+                t_index2 = find_index(t, periodo2)
                 t_index_half = int(t_index//2)
+                t_index_half2 = int(t_index2//2)
                 sum_all = sum_of_squares(harm_ampli_list)
+                sum_all2 = sum_of_squares(corrente_ampli_list)
                 sum_all_sinal = sum_of_squares(
-                    s_import_array_float[0:t_index_half])
+                    s[0:t_index_half])
+                sum_all_sinal2 = sum_of_squares(corrente[0:t_index_half2])
                 max_freq, max_ampli = max(harm_freq_list), max(harm_ampli_list)
+                max_freq_corrente, max_ampli_corrente = max(
+                    corrente_freq_list), max(corrente_ampli_list)
                 THD = (sqrt((sum_all-(max_ampli**2))/max_ampli**2))*100
                 TDD = (sqrt((sum_all-(max_ampli**2))/max_ampli**2))*100
+                THD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
+                        max_ampli_corrente**2))*100
+                TDD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
+                        max_ampli_corrente**2))*100
                 integral = (intg.trapz(
-                    t_import_array_float[0:t_index_half]), s_import_array_float[0: t_index_half])
+                    t[0:t_index_half]), s[0: t_index_half])
+                integral2 = (intg.trapz(
+                    t[0:t_index_half2]), corrente[0: t_index_half2])
                 valor_medio = periodo * integral[0]
+                valor_medio2 = periodo2 * integral2[0]
                 tensao_rms = sqrt(
-                    sum_all_sinal/len(t_import_array_float[0:t_index_half]))
-                grafico1 = ax1.plot(t_import_array_float, s_import_array_float)
+                    sum_all_sinal/len(t[0:t_index_half]))
+                corrente_rms = sqrt(
+                    sum_all_sinal2/len(t[0:t_index_half2]))
+                grafico1 = ax1.plot(t, s)
                 grafico2 = ax2.plot(frequencias, amplitudes)
+                grafico3 = ax3.plot(t, corrente)
+                grafico4 = ax4.plot(frequencias2, amplitudes2)
                 linha_tensao_rms = ax1.axhline(
-                    y=tensao_rms, color='r', linestyle='dashed', label='Tensão RMS')
+                    y=tensao_rms, color='r', linestyle='dashed', label='Valor Eficaz da Tensão')
                 linha_valor_pico = ax1.axhline(
                     y=max(sinal_ampli_list), color='b', linestyle='dashed', label='Valor de Pico')
-                ax1.grid(True)
-                ax2.grid(True)
-                ax1.set_xlim([0, periodo])
-                ax2.set_ylim([0, max_ampli+10])
-                ax2.set_xlim([0, max_freq+10])
+                linha_tensao_rms2 = ax3.axhline(
+                    y=corrente_rms, color='r', linestyle='dashed', label='Valor Eficaz da Corrente')
+                linha_valor_pico = ax3.axhline(
+                    y=max(sinal_ampli_list2), color='b', linestyle='dashed', label='Valor de Pico')
+
                 ax1.legend()
+                ax3.legend()
+                ax1.set_xlim([0, periodo])
+                ax2.set_ylim([0, max_ampli+(max_ampli*0.1)])
+                ax2.set_xlim([0, max_freq+(max_freq*0.1)])
+                ax3.set_xlim([0, periodo2])
+                ax4.set_ylim([0, max_ampli_corrente+(max_ampli_corrente*0.1)])
+                ax4.set_xlim([0, max_freq_corrente+(max_freq_corrente*0.1)])
+
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
@@ -400,6 +502,24 @@ def main():
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML1-'].print(
+                    'Tempo de execução:', timer_ns/10**9)
+
+                window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
+                window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
+                for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
+                    window['-ML2-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
+                        i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
+                window['-ML2-'].print(
+                    'Valor Médio: {:0.7f}'.format(valor_medio2))
+                window['-ML2-'].print(
+                    'Valor Eficaz da Corrente: {:0.1f}'.format(corrente_rms))
+                window['-ML2-'].print(
+                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
+                window['-ML2-'].print(
+                    'Periodo: {:0.3f}'.format(periodo2))
+                end_counter_ns = time.perf_counter_ns()
+                timer_ns = end_counter_ns - start_counter_ns
+                window['-ML2-'].print(
                     'Tempo de execução:', timer_ns/10**9)
 
         elif event == 'Exportar':
@@ -428,8 +548,7 @@ def main():
 
         elif event == 'Limpar':
             clean_graphs()
-            draw_figure_w_toolbar(
-                window['-CANVAS-'].TKCanvas, fig, window['controls_cv'].TKCanvas)
+            draw_graphs()
 
         elif event == '-harmonica1-' and len(values['-harmonica1-']) and values['-harmonica1-'][-1] not in '0123456789':
             window['-harmonica1-'].update(values['-harmonica1-'][:-1])
