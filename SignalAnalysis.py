@@ -683,7 +683,7 @@ def main():
             draw_graphs()
 
         elif event == 'Sobre...':
-            sg.popup('Sobre esse programa:\nEsse software tem como intúito conseguir criar um sinal puro ou ruídoso com base na soma de várias senóides, além de analisar e devolver valores de THD(Total Harmonic Distortion),TDD(Total Demand Distortion),Valor Médio,Valor Eficaz,Valor de Pico e período do sinal.', 'Nome dos integrantes:\nGuilherme Soares Solovijovas\nSergio Miguel Viana Lopes\nRodrigo Marcel\nJoão Victor Pedro', 'Versão 1.0',
+            sg.popup('Sobre esse programa:\nEsse software tem como intuito conseguir criar um sinal puro ou ruídoso com base na soma de várias senóides, além de analisar e devolver valores de THD(Total Harmonic Distortion),TDD(Total Demand Distortion),Valor Médio,Valor Eficaz,Valor de Pico e período do sinal.', 'Nome dos integrantes:\nGuilherme Soares Solovijovas\nSergio Miguel Viana Lopes\nRodrigo Marcel\nJoão Victor Pedro', 'Versão 1.0',
                      'Utiliza a versão {} do PySimpleGUI'.format(sg.version),  grab_anywhere=True, title='Sobre o Software')
 
         # TODO ESSES ELIF'S TEM O OBJETIVO DE IMPEDIR QUE O USUÁRIO INSIRA ALGUM CARACTER NAO DESEJADO NO CAMPO DE INPUT, COM A INTECÃO DE EVITAR
