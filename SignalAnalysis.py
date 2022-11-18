@@ -192,13 +192,15 @@ layout_tabgroup = [[sg.Tab('Gráfico Tensão', layout_tab1)], [
 
 layout_frame = [[sg.TabGroup(layout_tabgroup)]]
 
+menu_def = [['&Ajuda', '&Sobre...'], ]
+
 # AQUI É ONDE TODOS OS ELEMENTOS QUE FORMAM A ESTRUTURA SE AGRUPAM PARA SER GERADO A INTERFACE GRAFICA
-layout = [[sg.Column(entradas,  vertical_alignment='top'),
-           sg.VSeperator(), sg.Column(layout_frame)]]
+layout = [[sg.Menu(menu_def)], [sg.Column(entradas,  vertical_alignment='top'),
+                                sg.VSeperator(), sg.Column(layout_frame)]]
 
 # AQUI SE CRIA A JANELA
 window = sg.Window('CRIADOR E ANALISADOR DE SINAIS', layout, size=(screensize), finalize=True,
-                   element_justification='left', font='Monospace 10', resizable=True, icon=r'D:\SignalAnalysis\Logo.ico')
+                   element_justification='left', font='Monospace 10', resizable=True, icon=r'Logo.ico')
 window.Maximize()  # ABRE A JANELA MAXIMIZADA
 
 # OBTEM O ASPECT RATIO  DA RESOLUCÃO DO USUARIO
@@ -391,7 +393,7 @@ def main():
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
-                    window['-ML1-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
+                    window['-ML1-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
                         i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
                 window['-ML1-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio))
@@ -400,7 +402,7 @@ def main():
                 window['-ML1-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
                 window['-ML1-'].print(
-                    'Periodo: {:0.3f}'.format(periodo))
+                    'Período: {:0.3f}'.format(periodo))
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML1-'].print(
@@ -410,7 +412,7 @@ def main():
                 window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
                 window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
                 for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
-                    window['-ML2-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
+                    window['-ML2-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
                         i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
                 window['-ML2-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio2))
@@ -419,7 +421,7 @@ def main():
                 window['-ML2-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
                 window['-ML2-'].print(
-                    'Periodo: {:0.3f}'.format(periodo2))
+                    'Período: {:0.3f}'.format(periodo2))
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML2-'].print(
@@ -429,7 +431,8 @@ def main():
             else:
                 # ESSE TRECHO É RESPONSAVEL POR MOSTRAR AO USUARIO UM POPUP COM CAMPOS QUE ELE NAO PREENCHEU OU COLOCOU VALOR NULO
                 error_message = generate_error_message(validation_result[1])
-                sg.popup('Campo incompleto ou nulo!', error_message)
+                sg.popup('Campo incompleto ou nulo!',
+                         error_message, title='Erro')
 
         elif event == 'Importar':
             filename = sg.popup_get_file('Will not see this message', no_window=True, multiple_files=False,
@@ -556,7 +559,7 @@ def main():
                 # AQUI TEMOS AS EQUACOES DE THD,TDD
                 THD = (sqrt((sum_all-(max_ampli**2))/max_ampli**2))*100
                 TDD = (sqrt((sum_all-(max_ampli**2)) /
-                       max(sinal_ampli_list2)**2))*100
+                       max(sinal_ampli_list)**2))*100
                 THD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
                         max_ampli_corrente**2))*100
                 TDD2 = (sqrt((sum_all2-(max_ampli_corrente**2)) /
@@ -608,7 +611,7 @@ def main():
                 window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
                 window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
                 for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
-                    window['-ML1-'].print('Harmonica {}: {}Hz, A={:.2f}'.format(
+                    window['-ML1-'].print('Harmônica {}: {}Hz, A={:.2f}'.format(
                         i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
                 window['-ML1-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio))
@@ -617,7 +620,7 @@ def main():
                 window['-ML1-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
                 window['-ML1-'].print(
-                    'Periodo: {:0.3f}'.format(periodo))
+                    'Período: {:0.3f}'.format(periodo))
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML1-'].print(
@@ -628,7 +631,7 @@ def main():
                 window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
                 window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
                 for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
-                    window['-ML2-'].print('Harmonica {}: {}Hz, Amplitude={:.2f}'.format(
+                    window['-ML2-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
                         i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
                 window['-ML2-'].print(
                     'Valor Médio: {:0.7f}'.format(valor_medio2))
@@ -637,7 +640,7 @@ def main():
                 window['-ML2-'].print(
                     'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
                 window['-ML2-'].print(
-                    'Periodo: {:0.3f}'.format(periodo2))
+                    'Período: {:0.3f}'.format(periodo2))
                 end_counter_ns = time.perf_counter_ns()
                 timer_ns = end_counter_ns - start_counter_ns
                 window['-ML2-'].print(
@@ -678,6 +681,10 @@ def main():
             # SEM NENHUMA LINHA PLOTADA
             clean_graphs()
             draw_graphs()
+
+        elif event == 'Sobre...':
+            sg.popup('Sobre esse programa:\nEsse software tem como intúito conseguir criar um sinal puro ou ruídoso com base na soma de várias senóides, além de analisar e devolver valores de THD(Total Harmonic Distortion),TDD(Total Demand Distortion),Valor Médio,Valor Eficaz,Valor de Pico e período do sinal.', 'Nome dos integrantes:\nGuilherme Soares Solovijovas\nSergio Miguel Viana Lopes\nRodrigo Marcel\nJoão Victor Pedro', 'Versão 1.0',
+                     'Utiliza a versão {} do PySimpleGUI'.format(sg.version),  grab_anywhere=True, title='Sobre o Software')
 
         # TODO ESSES ELIF'S TEM O OBJETIVO DE IMPEDIR QUE O USUÁRIO INSIRA ALGUM CARACTER NAO DESEJADO NO CAMPO DE INPUT, COM A INTECÃO DE EVITAR
         # ERROS NO CÓDIGO, BASICAMENTE ELE LÊ O QUE FOI DIGITADO E SE NÃO FOR UM CARACTER DA LISTA DOS PERMITIDOS ELE APAGA
