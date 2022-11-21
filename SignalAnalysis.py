@@ -29,6 +29,21 @@ def make_dpi_aware():
 
 make_dpi_aware()  # CHAMA A FUNCÃO
 
+
+def multiline_print(multiline1, THD, TDD, harm_freq_list, harm_ampli_list, valor_medio, tensao_rms, sinal_ampli_list, periodo, sample_rate):
+    window[multiline1].print('THD é: {:0.1f}%'.format(THD))
+    window[multiline1].print('TDD é: {:0.1f}%'.format(TDD))
+    for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
+        window[multiline1].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
+            i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
+    window[multiline1].print('Valor Médio: {:0.7f}'.format(valor_medio))
+    window[multiline1].print(
+        'Valor Eficaz da Tensão: {:0.1f}'.format(tensao_rms))
+    window[multiline1].print(
+        'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
+    window[multiline1].print('Período: {:0.3f}'.format(periodo))
+    window[multiline1].print('Taxa de amostagem {}Hz'.format(int(sample_rate)))
+
 # FUNCÃO QUE FAZ COM QUE OS GRAFICOS SEJAM DESENHADOS NA INTERFACE GRÁFICA
 
 
@@ -158,6 +173,8 @@ def sum_of_squares(lst):
 # AQUI É ONDE O CODIGO LÊ A RESOLUCAO DA TELA DO USUARIO
 user32 = ctypes.windll.user32
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+multiline1 = '-ML1-'
+multiline2 = '-ML2-'
 
 # ESCOLHA DO TEMA/COR DA INTERFACE
 sg.theme('BrownBlue')
@@ -390,43 +407,10 @@ def main():
                 ax4.set_xlim([0, max_freq_corrente+(max_freq_corrente*0.1)])
 
                 # TODA ESSA PARTE PARA BAIXO ESTÁ DESTINADA A ESCREVER NO CAMPO DE TEXTO (MULTILINE) OS VALORES OBTIDOS NOS CÁLCULOS
-                window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
-                window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
-                for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
-                    window['-ML1-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
-                        i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
-                window['-ML1-'].print(
-                    'Valor Médio: {:0.7f}'.format(valor_medio))
-                window['-ML1-'].print(
-                    'Valor Eficaz da Tensão: {:0.1f}'.format(tensao_rms))
-                window['-ML1-'].print(
-                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
-                window['-ML1-'].print(
-                    'Período: {:0.3f}'.format(periodo))
-                end_counter_ns = time.perf_counter_ns()
-                timer_ns = end_counter_ns - start_counter_ns
-                window['-ML1-'].print(
-                    'Tempo de execução:', timer_ns/10**9)
-                window['-ML1-'].print('Taxa de amostagem {}Hz'.format(int(sample_rate)))
-
-                window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
-                window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
-                for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
-                    window['-ML2-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
-                        i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
-                window['-ML2-'].print(
-                    'Valor Médio: {:0.7f}'.format(valor_medio2))
-                window['-ML2-'].print(
-                    'Valor Eficaz da Corrente: {:0.1f}'.format(corrente_rms))
-                window['-ML2-'].print(
-                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
-                window['-ML2-'].print(
-                    'Período: {:0.3f}'.format(periodo2))
-                end_counter_ns = time.perf_counter_ns()
-                timer_ns = end_counter_ns - start_counter_ns
-                window['-ML2-'].print(
-                    'Tempo de execução:', timer_ns/10**9)
-                window['-ML2-'].print('Taxa de amostagem {}Hz'.format(int(sample_rate)))
+                multiline_print(multiline1, THD, TDD, harm_freq_list, harm_ampli_list,
+                                valor_medio, tensao_rms, sinal_ampli_list, periodo, sample_rate)
+                multiline_print(multiline2, THD2, TDD2, corrente_freq_list, corrente_ampli_list,
+                                valor_medio2, corrente_rms, sinal_ampli_list2, periodo2, sample_rate)
 
             else:
                 # ESSE TRECHO É RESPONSAVEL POR MOSTRAR AO USUARIO UM POPUP COM CAMPOS QUE ELE NAO PREENCHEU OU COLOCOU VALOR NULO
@@ -608,45 +592,10 @@ def main():
                 ax4.set_xlim([0, max_freq_corrente+(max_freq_corrente*0.1)])
 
                 # TODA ESSA PARTE PARA BAIXO ESTÁ DESTINADA A ESCREVER NO CAMPO DE TEXTO (MULTILINE) OS VALORES OBTIDOS NOS CÁLCULOS
-                window['-ML1-'].print('THD é: {:0.1f}%'.format(THD))
-                window['-ML1-'].print('TDD é: {:0.1f}%'.format(TDD))
-                for i in range(len(harm_freq_list)) and range(len(harm_ampli_list)):
-                    window['-ML1-'].print('Harmônica {}: {}Hz, A={:.2f}'.format(
-                        i+1, ceil(harm_freq_list[i]), harm_ampli_list[i]))
-                window['-ML1-'].print(
-                    'Valor Médio: {:0.7f}'.format(valor_medio))
-                window['-ML1-'].print(
-                    'Tensao RMS: {:0.1f}'.format(tensao_rms))
-                window['-ML1-'].print(
-                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list)))
-                window['-ML1-'].print(
-                    'Período: {:0.3f}'.format(periodo))
-                end_counter_ns = time.perf_counter_ns()
-                timer_ns = end_counter_ns - start_counter_ns
-                window['-ML1-'].print(
-                    'Tempo de execução:', timer_ns/10**9)
-                window['-ML1-'].print(
-                    'Taxa de amostagem {}Hz'.format(int(sample_rate_local)))
-
-                window['-ML2-'].print('THD é: {:0.1f}%'.format(THD2))
-                window['-ML2-'].print('TDD é: {:0.1f}%'.format(TDD2))
-                for i in range(len(corrente_freq_list)) and range(len(corrente_ampli_list)):
-                    window['-ML2-'].print('Harmônica {}: {}Hz, Amplitude={:.2f}'.format(
-                        i+1, ceil(corrente_freq_list[i]), corrente_ampli_list[i]))
-                window['-ML2-'].print(
-                    'Valor Médio: {:0.7f}'.format(valor_medio2))
-                window['-ML2-'].print(
-                    'Valor Eficaz da Corrente: {:0.1f}'.format(corrente_rms))
-                window['-ML2-'].print(
-                    'Valor de Pico: {:0.1f}'.format(max(sinal_ampli_list2)))
-                window['-ML2-'].print(
-                    'Período: {:0.3f}'.format(periodo2))
-                end_counter_ns = time.perf_counter_ns()
-                timer_ns = end_counter_ns - start_counter_ns
-                window['-ML2-'].print(
-                    'Tempo de execução:', timer_ns/10**9)
-                window['-ML2-'].print(
-                    'Taxa de amostagem {}Hz'.format(int(sample_rate_local)))
+                multiline_print(multiline1, THD, TDD, harm_freq_list, harm_ampli_list,
+                                valor_medio, tensao_rms, sinal_ampli_list, periodo, sample_rate)
+                multiline_print(multiline2, THD2, TDD2, corrente_freq_list, corrente_ampli_list,
+                                valor_medio2, corrente_rms, sinal_ampli_list2, periodo2, sample_rate_local)
 
         elif event == 'Exportar':
             # FILENAME É A VARIÁVEL QUE RECEBE O NOME DO ARQUIVO ESCOLHIDO PELO USUARIO NA HORA DE SALVAR O ARQUIVO
